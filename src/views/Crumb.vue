@@ -22,7 +22,7 @@
 			}
 		},
 		computed:{
-			parentsData(){
+			parentsData(){	// 所有父级数据
 				return dataUtils.getParentsById(this.data, this.data[0].currentId).reverse();
 			},
 			currentData(){
@@ -31,14 +31,10 @@
 		},
 		methods:{
 			gotoFile(id,floor){				
-				this.data[0].currentId = id	
-				this.data[0].currentFloor = floor + 1
-				this.cancelChecked()
+				this.$emit('gotoFile',id)
 			},
 			cancelChecked(){
-				this.currentData.forEach(function(item){
-					item.checked = false;
-				})				
+				this.$emit('cancelChecked')					
 			}
 		}
 	}

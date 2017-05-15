@@ -13,18 +13,34 @@
 			</form>
 			<div class="view-item-list">
 				<div class="view-switch">
-					<a href="javascript:;" class="view-list">
+					<a 
+						class="view-list" 
+						:class="{active:viewType === 'list'}" 
+						@click.prevent="changeView('list')"
+					>
 						<i class="icon bg"></i>
 					</a>
-					<a href="javascript:;" class="view-thumb active">
+					<a 
+						class="view-thumb" 
+						:class="{active:viewType === 'thumb'}"
+						@click.prevent="changeView('thumb')"
+					>
 						<i class="icon bg"></i>
 					</a>
 				</div>
 				<div class="rank-switch">
-					<a href="javascript:;" class="time-sort active">
+					<a 
+						class="time-sort"
+						:class="{active:sortType === 'time'}"
+						@click.prevent="changeSort('time')"						
+					>
 						<i class="icon bg"></i>
 					</a>
-					<a href="javascript:;" class="letter-sort">
+					<a 
+						class="letter-sort"
+						:class="{active:sortType === 'letter'}"
+						@click.prevent="changeSort('letter')"						
+					>
 						<i class="icon bg"></i>
 					</a>
 				</div>				
@@ -112,11 +128,17 @@
 				type: Array
 			}
 		},
+		data(){
+			return {
+				viewType:'thumb',
+				sortType:'time'
+			}
+		},
 		computed:{
 			currentData(){
 				return dataUtils.getChildrenById(this.data, this.data[0].currentId)
 			},
-			isChecked(){
+			isChecked(){	// 判断是否有文件被选中
 				return this.currentData.filter(function(item){
 					return item.checked
 				}).length				
@@ -129,28 +151,16 @@
 				})				
 			},			
 			createFolder(){	
-				this.data[0].maxId++
-
-				let newData = {
-						name: '',
-						id:this.data[0].maxId,
-						pId:this.data[0].currentId,
-						type: 'folder',
-						checked:false,
-						isRename:true,
-						creating:true,
-						child:[]
-					}
-
-				this.currentData.unshift(newData)
+				this.$emit('createFolder')
 			},
 			deleteFile(){
-				this.$emit('delete')				
+				this.$emit('delete','allDelete')				
 			},
-			renameFile(){
-				this.currentData.filter( (item) =>{
+			renameFile(){	// 重命名被选中文件中的第一个
+				let item = this.currentData.filter( (item) =>{
 					return item.checked
-				})[0].isRename = true				
+				})[0]
+				this.$emit('rename',item)			
 			},
 			moveFile(){
 				if(this.data[0].currentId === 0 && this.isChecked == this.currentData.length){
@@ -158,7 +168,15 @@
 					return;
 				}
 
-				this.$emit('move')
+				this.$emit('move','allMove')
+			},
+			changeView(view){
+				this.viewType = view
+				this.$emit('viewchange',view)
+			},
+			changeSort(sort){
+				this.sortType = sort
+				this.$emit('sortchange',sort)
 			}
 		}		
 	}

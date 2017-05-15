@@ -1,4 +1,3 @@
-import dataUtils from './data-utils.js'
 
 var Data = {
 	files: [
@@ -17,6 +16,7 @@ var Data = {
 					type: 'folder',
 					checked:false,
 					isRename:false,
+					timeStamp:1494810874057,					
 					child: [
 						{
 							name: 'aaa',
@@ -25,6 +25,7 @@ var Data = {
 							type: 'folder',
 							checked:false,
 							isRename:false,
+							timeStamp:1494811874057,
 							child:[]
 						}
 					]					
@@ -36,6 +37,7 @@ var Data = {
 					type: 'folder',
 					checked:false,
 					isRename:false,
+					timeStamp:1494812874057,
 					child: []					
 				},
 				{
@@ -45,6 +47,7 @@ var Data = {
 					type: 'folder',
 					checked:false,
 					isRename:false,
+					timeStamp:1494813874057,
 					child: []					
 				},
 				{
@@ -54,6 +57,7 @@ var Data = {
 					type: 'folder',
 					checked:true,
 					isRename:false,
+					timeStamp:1494814874057,
 					child: []					
 				}																
 			]

@@ -73,7 +73,7 @@
 			'move-list': MoveList
 		},
 		updated(){
-			if(this.moveInfo.isMoving){
+			if(this.moveInfo.isMoving){ // 拖动移动信息框
 				eventUtils.drapEle(this.$refs.menuHead,this.$refs.menu,true)
 			}			
 		},		
@@ -81,23 +81,36 @@
 			currentData(){
 				return dataUtils.getChildrenById(this.data, this.data[0].currentId)
 			},
-			checkedFile(){
-				return this.currentData.filter( (item) =>{
-					return item.checked
-				})
+			checkedFile(){	// 选中文件的数据
+				if(this.moveInfo.moveType === 'allMove'){
+					return this.currentData.filter( (item) =>{
+						return item.checked
+					})
+				}
+
+				if(this.moveInfo.moveType === 'singleMove'){
+					return [ this.currentData[this.moveInfo.fileIndex] ]
+				}				
 			},
-			targetData(){
+			targetData(){	// 目标文件的数据
 				return dataUtils.getChildrenById(this.data, this.targetId)
 			}		
 		},		
 		methods:{
 			sureDelete(){
-				for(var i=0; i<this.currentData.length; i++){
-					if(this.currentData[i].checked){
-						this.currentData.splice(i,1)
-						i--
-					}					
+				if(this.deleteInfo.deleteType === 'allDelete'){
+					for(var i=0; i<this.currentData.length; i++){
+						if(this.currentData[i].checked){
+							this.currentData.splice(i,1)
+							i--
+						}					
+					}
 				}
+
+				if(this.deleteInfo.deleteType === 'singleDelete'){
+					this.currentData.splice(this.deleteInfo.fileIndex,1)
+				}
+
 				this.$emit('success','删除成功')
 				this.deleteInfo.isDeleting = false
 			},
@@ -111,12 +124,18 @@
 					return
 				}	
 
-				for(var i=0; i<this.currentData.length; i++){
-					if(this.currentData[i].checked){
-						this.movedData.push( ...this.currentData.splice(i,1) )
-						i--
-					}					
-				}							
+				if(this.moveInfo.moveType === 'allMove'){
+					for(var i=0; i<this.currentData.length; i++){
+						if(this.currentData[i].checked){
+							this.movedData.push( ...this.currentData.splice(i,1) )
+							i--
+						}					
+					}	
+				}			
+
+				if(this.moveInfo.moveType === 'singleMove'){
+					this.movedData.push( ...this.currentData.splice(this.moveInfo.fileIndex,1) )
+				}			
 
 				this.dealNameRepeat()
 				if(this.isNameRepeat){
@@ -136,7 +155,7 @@
 				this.moveInfo.isMoving = false
 				this.isNameRepeat = false
 			},
-			getTargetFolder(id,name){
+			getTargetFolder(id,name){	// 获取要移动到的目标文件数据
 				this.targetName = name
 				this.targetId = id
 
@@ -144,7 +163,7 @@
 					this.$emit('fail','已经在该文件夹下')
 				}
 			},
-			dealNameRepeat(){
+			dealNameRepeat(){	// 移动时判断是否重名,获取重名文件数据
 				this.targetData.forEach( (item) =>{
 					this.movedData.forEach( (value) =>{
 						if( item.name === value.name ){
@@ -158,7 +177,7 @@
 					this.isNameRepeat = true
 				}
 			},
-			coverName(){
+			coverName(){	// 覆盖重名文件
 				for(var i=0; i<this.targetData.length; i++){
 					for(var j=0; j<this.targetRepeatNameData.length; j++){
 						if( this.targetData[i] === this.targetRepeatNameData[j]){
@@ -169,7 +188,7 @@
 
 				this.moveSuccess()
 			},
-			overName(){
+			overName(){    // 更改重名文件文件名
 				let i = 1
 				this.movedRepeatNameData.forEach( (item) =>{
 					item.name = item.name+'('+i+')'	

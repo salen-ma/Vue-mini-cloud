@@ -17,6 +17,8 @@
 				v-if="item.child.length" 
 				:data="item.child"
 				:increment = "count"
+				@gotoFile="gotoFile"
+				@cancelChecked="cancelChecked"				
 			></file-tree >
 		</li>			
 	</ul>		
@@ -59,13 +61,10 @@
 		},		
 		methods:{
 			gotoFile(id){				
-				this.allData[0].currentId = id	
-				this.cancelChecked()
+				this.$emit('gotoFile',id)
 			},
 			cancelChecked(){
-				this.currentData.forEach(function(item){
-					item.checked = false;
-				})				
+				this.$emit('cancelChecked')				
 			}
 		}
 	}

@@ -66,11 +66,6 @@
 			},
 			getTargetFolder(id,name){	// 由于是递归组件，需要层层向上传递自定义事件
 				this.$emit('getTarget',id,name)
-			},
-			cancelChecked(){
-				this.currentData.forEach(function(item){
-					item.checked = false;
-				})				
 			}
 		}
 	}

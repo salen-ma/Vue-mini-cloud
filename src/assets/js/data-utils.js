@@ -53,6 +53,7 @@ cloud.add0 = function(num){
 
 //排序
 cloud._sort = function(arr,type){
+	let attrName = 'timeStamp'
 	if(type === 'time'){
 		attrName = 'timeStamp';
 		arr.reverse();

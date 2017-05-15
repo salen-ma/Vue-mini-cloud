@@ -1,11 +1,23 @@
 <template>
-	<ol class="file-list thumb-view">
+	<ol 
+		class="file-list" 
+		:class="{'thumb-view':viewType === 'thumb'}" 
+		@mousedown="select"
+	>
 		<li 
 			v-for="item,index in currentData"
-			class="folder thumb"
-			:class="{checked:item.checked}"
+			:key="index"
+			class="folder"
+			:class="{checked:item.checked,thumb:viewType==='thumb',list:viewType==='list'}"
 			@click="gotoFile(item.id)"
+			:data-index="index"
 		>
+			<!-- 列表视图 -->
+			<a 
+				v-if=" viewType==='list' "	
+				class="checkbox bg" 
+				@click.stop="item.checked = !item.checked"
+			></a>
             <i class="icon folder-icon bg"></i>
             <span 
 	            class="name" 
@@ -22,33 +34,41 @@
 	            v-model="item.name"
 	            v-select="item.isRename"
 	            @click.stop
-	            @keyup.13="successReName(item,index)"
-	            @blur="successReName(item,index)"
+	            @keyup.13="sureRename(item,index)"
+	            @blur="sureRename(item,index)"
 	            @keyup.27="exitReName(item,index)"
             />
-            <a class="checkbox bg" @click.stop="item.checked = !item.checked"></a>
+            <!-- 列表视图 -->
+            <template v-if=" viewType==='list' ">
+				<div class="fn-btn">
+	                <i class="icon fn-icon share-icon bg" @click.stop></i>
+	                <i class="icon fn-icon down-icon bg" @click.stop></i>
+	                <i class="icon fn-icon move-icon bg" @click.stop="moveFile(item,index)"></i>
+	                <i class="icon fn-icon delete-icon bg" @click.stop="deleteFile(index)">
+	                </i>
+	                <i class="icon fn-icon rename-icon bg" @click.stop="renameFile(item)"></i>      
+	            </div>
+	            <time>{{item.time}}</time>   
+            </template>         
+            <a 
+            	v-if=" viewType==='thumb' "
+	            class="checkbox bg" 
+	            @click.stop="item.checked = !item.checked"
+            ></a>
         </li>
 	</ol>
 </template>
 
 <script>
 	import dataUtils from '../assets/js/data-utils.js'
+	import eventUtils from '../assets/js/event-utils.js'
 	export default {
-		props:{
-			data:{
-				type: Array
-			}
-		},
-		data(){
-			return {
-				preName:''
-			}
-		},
-		directives:{
+		props:["data","viewType","sortType","preName"],
+		directives:{   // 自定义指令,点击重命名时选中输入框文本
 			select:{
 				update(el,{value}){
 					if(value) {
-						if(!el.selected){
+						if(!el.selected){	// 用来处理视图更新时,输入框文本被重复选中
 							el.select()
 							el.selected = true
 						}
@@ -65,25 +85,24 @@
 				}
 		},
 		computed:{
-			currentData(){
-				return dataUtils.getChildrenById(this.data, this.data[0].currentId)
+			currentData(){	// 根据当前排序方式,对当前数据进行排序
+				let currentData = dataUtils.getChildrenById(this.data, this.data[0].currentId)
+				dataUtils._sort(currentData,this.sortType)
+				return currentData
 			}
 		},
 		methods:{
-			gotoFile(id){				
-				this.data[0].currentId = id	
-				this.cancelChecked()
+			gotoFile(id){		
+				this.$emit('gotoFile',id)		
 			},
 			cancelChecked(){
-				this.currentData.forEach(function(item){
-					item.checked = false;
-				})				
+				this.$emit('cancelChecked')				
 			},
 			renameFile(item){
-				this.preName = item.name
-				item.isRename = true
+				this.$emit('rename',item)
 			},
-			successReName(item,index){
+			sureRename(item,index){	
+				// 判断命名是否冲突
 				let len = this.currentData.filter( (value) =>{
 					return value.name === item.name
 				}).length
@@ -105,11 +124,13 @@
 					value.selected = false
 				})
 
+				// 若文件名为空,按取消命名处理
 				if( !item.name.trim() ){
 					this.exitReName(item,index)
 					return
 				}				
 
+				// 新建状态则显示新建成功,命名状态则显示命名成功
 				if(item.creating){
 					item.creating = false
 					item.isRename = false
@@ -118,13 +139,15 @@
 				}
 
 				if(item.isRename){	
-				// 解决回车时同时触发onblur,会同时发生新建成功和命名成功的问题
 					this.$emit('success','命名成功')
 					item.isRename = false
 				}
 			},
 			exitReName(item,index){
+				// 新建状态则显示取消新建,命名状态则显示取消命名
 				if(item.creating){
+					item.creating = false
+					item.isRename = false
 					this.currentData.splice(index,1)
 					this.$emit('fail','取消新建')
 					return
@@ -133,7 +156,23 @@
 				this.$emit('fail','取消命名')
 				item.name = this.preName
 				item.isRename = false
-			}
+			},
+			deleteFile(index){
+				this.$emit('delete','singleDelete',index)
+			},
+			moveFile(item,index){
+				item.checked = true
+				if(this.data[0].currentId === 0 && this.currentData.length === 1){
+					this.$emit('fail','没有可移动到的文件夹')
+					return;
+				}
+
+				this.$emit('move','singleMove',index)
+			},
+			select(e){
+				let This = this
+				eventUtils.dragSelect(e,This)
+			}			
 		}
 	}
 </script>
