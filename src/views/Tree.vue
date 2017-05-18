@@ -1,14 +1,14 @@
 <template>
 	<ul>
-		<li v-for="item,index of data" :key="index">
+		<li v-for="item,index of data" v-if="!isHide(item.id)" :key="index">
 			<span 
 				:class="{
 					open:item.child.length,
 					close:!item.child.length,
-					active:item.id === allData[0].currentId
+					active:item.id === activeId
 				}" 
 				:style="[stylePadding]"
-				@click="gotoFile(item.id)"
+				@click="clickEvent(item.id,item.name)"
 			>
 				<i class="bg"></i>
 				{{item.name}}
@@ -17,8 +17,9 @@
 				v-if="item.child.length" 
 				:data="item.child"
 				:increment = "count"
-				@gotoFile="gotoFile"
-				@cancelChecked="cancelChecked"				
+				:activeId="activeId"
+				:checkedId="checkedId"
+				@clickEvent="clickEvent"			
 			></file-tree >
 		</li>			
 	</ul>		
@@ -35,9 +36,16 @@
 			data: {
 				type: Array
 			},
+			checkedId: {
+				type: Array
+			},			
 			increment:{
 				type:Number,
 				default:0
+			},
+			activeId:{
+				type:Number,
+				default:0				
 			}
 		},
 		data(){
@@ -60,11 +68,15 @@
 			}					
 		},		
 		methods:{
-			gotoFile(id){				
-				this.$emit('gotoFile',id)
+			clickEvent(id,name){				
+				this.$emit('clickEvent',id,name)
 			},
-			cancelChecked(){
-				this.$emit('cancelChecked')				
+			isHide(name){
+				if(this.checkedId){
+					return this.checkedId.some( (item)=>{
+						return item === name
+					})
+				}
 			}
 		}
 	}

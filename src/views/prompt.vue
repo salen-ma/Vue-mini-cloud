@@ -28,7 +28,12 @@
 						<span class="move-to-target">移动到 : {{this.targetName}}</span>
 					</div>
 					<div class="file-tree">
-						<move-list :data="data" @getTarget="getTargetFolder"/>
+						<move-list 
+							:data="data" 
+							:checkedId="checkedId"
+							:activeId="targetId"
+							@clickEvent="getTargetFolder"
+						/>
 					</div>
 				</div>
 				<span class="cancel-move"  @click="cancelMove">取消</span>
@@ -55,14 +60,13 @@
 	import dataUtils from '../assets/js/data-utils.js'
 	import eventUtils from '../assets/js/event-utils.js'
 
-	import MoveList from '../views/MoveList.vue'
+	import Tree from '@/views/Tree.vue'
 
 	export default {
 		props:["deleteInfo","moveInfo","data"],
 		data(){
 			return {
 				targetName:'微云',
-				targetId:0,
 				isNameRepeat:false,
 				movedRepeatNameData:[],
 				targetRepeatNameData:[],
@@ -70,7 +74,7 @@
 			}
 		},
 		components:{
-			'move-list': MoveList
+			'move-list': Tree
 		},
 		updated(){
 			if(this.moveInfo.isMoving){ // 拖动移动信息框
@@ -94,6 +98,18 @@
 			},
 			targetData(){	// 目标文件的数据
 				return dataUtils.getChildrenById(this.data, this.targetId)
+			},
+			checkedId(){
+				let idArr = []
+				this.currentData.forEach(function(item){
+					if(item.checked){
+						idArr.push(item.id)
+					}
+				})		
+				return idArr
+			},
+			targetId(){
+				return this.data[0].targetId
 			}		
 		},		
 		methods:{
@@ -154,10 +170,11 @@
 				this.$emit('fail','取消移动')
 				this.moveInfo.isMoving = false
 				this.isNameRepeat = false
+				this.data.targetId = 0
 			},
 			getTargetFolder(id,name){	// 获取要移动到的目标文件数据
 				this.targetName = name
-				this.targetId = id
+				this.data[0].targetId = id
 
 				if(this.data[0].currentId === id){
 					this.$emit('fail','已经在该文件夹下')
@@ -220,7 +237,8 @@
 
 				this.$emit('success','移动成功')
 				this.moveInfo.isMoving = false
-				this.isNameRepeat = false				
+				this.isNameRepeat = false
+				this.data.targetId = 0				
 			}					
 		}
 	}

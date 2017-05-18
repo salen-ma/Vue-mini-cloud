@@ -25,7 +25,8 @@
 				<div class="file-tree">
 					<file-tree 
 						:data="data"
-						@gotoFile="gotoFile"
+						:activeId="activeId"
+						@clickEvent="gotoFile"
 						@cancelChecked="cancelChecked"						 
 					/>
 				</div>		
@@ -107,15 +108,15 @@
 	import dataUtils from '../assets/js/data-utils.js'
 	import eventUtils from '../assets/js/event-utils.js'
 
-	// views components
-	import Header from '../views/Head.vue'
-	import Tree from '../views/Tree.vue'
-	import Files from '../views/Files.vue'
-	import Crumb from '../views/Crumb.vue'
+	// view components
+	import Header from '@/views/Head.vue'
+	import Tree from '@/views/Tree.vue'
+	import Files from '@/views/Files.vue'
+	import Crumb from '@/views/Crumb.vue'
 
 	// dealInfo
-	import AlertBox from '../views/alert.vue'
-	import promptBox from '../views/prompt.vue'
+	import AlertBox from '@/views/alert.vue'
+	import promptBox from '@/views/prompt.vue'
 
 	export default {
 		data(){
@@ -173,21 +174,26 @@
 			},
 			currentData(){
 				return dataUtils.getChildrenById(this.data, this.data[0].currentId)
+			},
+			activeId(){
+				return this.data[0].currentId
 			}			
 		},
 		methods:{
-			openFile(){
+			openFile(){ // 右键打开
 				if(!this.checkedFileLength){
 					this.dealFail('请选择文件')
 					return
 				}	
 
+				// 打开被选中的第一个文件夹
 				let id = this.currentData.filter( (item) =>{
 					return item.checked
 				})[0].id
 
 				this.gotoFile(id)	
 
+				// 隐藏右键菜单
 				let _contextmenu = this.$refs._contextmenu
 				eventUtils.hideContextmenu(_contextmenu)							
 			},
@@ -216,7 +222,7 @@
 					this.alertInfo.isShow= false
 				},600)				
 			},
-			rename(){
+			rename(){	// 右键重命名
 				if(!this.checkedFileLength){
 					this.dealFail('请选择文件')
 					return
@@ -233,7 +239,7 @@
 			},
 			renameFile(item){
 				this.preName = item.name
-				item.isRename = true				
+				item.isRename = true			
 			},
 			deleteFile(type,index){
 				if(!this.checkedFileLength){
@@ -248,7 +254,7 @@
 				let _contextmenu = this.$refs._contextmenu
 				eventUtils.hideContextmenu(_contextmenu)
 			},
-			move(){
+			move(){	  // 右键移动
 				if(!this.checkedFileLength){
 					this.dealFail('请选择文件')
 					return
@@ -287,13 +293,13 @@
 			changeSort(sort){ // 改变排序方式
 				this.sortType = sort
 			},
-			showContextmenu(e){
+			showContextmenu(e){   // 显示右键菜单
 				let _contextmenu = this.$refs._contextmenu
 				let This = this
 
 				eventUtils.showContextmenu(e,_contextmenu,This)
 			},
-			hideContextmenu(e){
+			hideContextmenu(e){	  // 隐藏右键菜单
 				if(e.buttons !== 1){
 					return;
 				}				
